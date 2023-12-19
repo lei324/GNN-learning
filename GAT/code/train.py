@@ -2,6 +2,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import re
 import sys
 import datetime
 import glob
@@ -14,6 +15,8 @@ import torch.nn as nn
 import torch.nn.functional as  F 
 import torch.optim as optim
 from torch.autograd import Variable
+from torch.utils.tensorboard import SummaryWriter
+
 
 from utils import laod_data, accuracy
 from model import GAT
@@ -31,6 +34,10 @@ parser.add_argument("--nb_heads",type=int,default=8,help='Number of head attenti
 parser.add_argument("--dropout",type=float,default=0.5,help='Dropout rate')
 parser.add_argument("--alpha",type=float,default=0.2,help='Alpha for the leaky_relu')
 parser.add_argument("--patience",type=int,default=100,help='Patience(early stop)')
+parser.add_argument("--data_path",default='./data/cora/',help='data_path')
+parser.add_argument("--dataset",default='cora',help='dataset')
+parser.add_argument("--save_path",default='./checkpoints/',help='the path of checkpoints')
+parser.add_argument("--log_path",default='./logs/',help='the result')
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -42,7 +49,7 @@ if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
 
-adj,features,labels,idx_train,idx_val,idx_test = laod_data()
+adj,features,labels,idx_train,idx_val,idx_test = laod_data(args.data_path,args.dataset)
 
 if args.sparse:
     raise NotImplementedError('尚未实现')
@@ -68,7 +75,7 @@ if args.cuda:
 
 features ,adj,labels = Variable(features),Variable(adj),Variable(labels)
 
-
+writer = SummaryWriter()
 def train(epoch):
     start_time =time.time()
     model.train()
@@ -76,6 +83,7 @@ def train(epoch):
     output = model(features,adj)
     train_loss = F.nll_loss(output[idx_train],labels[idx_train])
     train_acc = accuracy(output[idx_train],labels[idx_train])
+    writer.add_scalars("Train",{'loss':train_loss,'acc':train_acc},epoch)
     train_loss.backward()
     optimizer.step()
 
@@ -86,12 +94,15 @@ def train(epoch):
     val_loss = F.nll_loss(output[idx_val], labels[idx_val])
     val_acc = accuracy(output[idx_train],labels[idx_train])
 
+    writer.add_scalars("Val",{'loss':val_loss,'acc':val_acc},epoch)
+
     print('Epoch: {:04d}'.format(epoch+1),
           'loss_train: {:.4f}'.format(train_loss.data.item()),
           'acc_train: {:.4f}'.format(train_acc.data.item()),
           'loss_val: {:.4f}'.format(val_loss.data.item()),
           'acc_val: {:.4f}'.format(val_acc.data.item()),
           'time: {:.4f}s'.format(time.time() - start_time))
+    writer.flush()
     return val_loss.data.item()
 
 
@@ -114,7 +125,7 @@ def main():
     validation_history = 0.0
     for epoch in range(args.epochs):
         loss_values.append(train(epoch))
-        torch.save(model.state_dict(), '{}.pkl'.format(epoch))
+        torch.save(model.state_dict(), '{}{}.pkl'.format(args.save_path,epoch))
 
         if loss_values[-1] < best:
             best = loss_values[-1]
@@ -126,22 +137,26 @@ def main():
         if bad_counter == args.patience:
             break
 
-        files = glob.glob('*.pkl')
+        files = glob.glob('*.pkl',root_dir=args.save_path)
         for file in files:
             epoch_nb = int(file.split('.')[0])
+            # epoch_nb = int(re.findall(r'\d+', file))
             if epoch_nb < best_epoch:
-                os.remove(file)
-    files = glob.glob('*.pkl')
+                os.remove(os.path.join(args.save_path,file))
+    files = glob.glob('*.pkl',root_dir=args.save_path)
     for file in files:
         epoch_nb = int(file.split('.')[0])
+        # epoch_nb = int(re.findall(r'\d+', file))
         if epoch_nb > best_epoch:
-            os.remove(file)
+            os.remove(os.path.join(args.save_path,file))
     print("Optimization Finished!")
     print("Total time elapsed: {:.4f}s".format(time.time() - t_total))
 
     # Restore best model
     print('Loading {}th epoch'.format(best_epoch))
-    model.load_state_dict(torch.load('{}.pkl'.format(best_epoch)))
+    model.load_state_dict(torch.load('{}{}.pkl'.format(args.save_path,best_epoch)))
+
+    writer.close()
 
     #test
     compute_test()
@@ -167,7 +182,7 @@ class DualLogger:
 
 if __name__ =='__main__':
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_filename = f"logs/train_output_{timestamp}.log"
+    log_filename = f"{args.log_path}{args.dataset}_train_output_{timestamp}.log"
 
     # logger
     original_stdout = sys.stdout

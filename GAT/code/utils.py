@@ -7,11 +7,11 @@ def encode_onehot(labels):
     """
     """
     classes = sorted(list(set(labels)))
-    print(classes)
+    # print(classes)
     classes_dict = {c:np.identity(len(classes))[i,:] for i ,c in enumerate(classes)}
-    print(classes_dict)
+    # print(classes_dict)
     labels_one_hot = np.array(list(map(classes_dict.get,labels)),dtype=np.int32)
-    print(labels_one_hot)
+    # print(labels_one_hot)
     return labels_one_hot
 
 
