@@ -1,0 +1,46 @@
+INFO:root:Using: cuda:0
+INFO:root:Using seed 1234.
+INFO:root:LPModel(
+  (encoder): HGCN(
+    (layers): Sequential(
+      (0): HyperbolicGraphConvolution(
+        (linear): HypLinear(
+          in_features=1433, out_features=16, c=Parameter containing:
+          tensor([1.], requires_grad=True)
+        )
+        (agg): HypAgg(
+          c=Parameter containing:
+          tensor([1.], requires_grad=True)
+        )
+        (hyp_act): HypAct()
+      )
+      (1): HyperbolicGraphConvolution(
+        (linear): HypLinear(
+          in_features=16, out_features=16, c=Parameter containing:
+          tensor([1.], requires_grad=True)
+        )
+        (agg): HypAgg(
+          c=Parameter containing:
+          tensor([1.], requires_grad=True)
+        )
+        (hyp_act): HypAct()
+      )
+    )
+  )
+  (dc): FermiDiracDecoder()
+)
+INFO:root:Total number of parameters: 23219
+INFO:root:Epoch: 0005 lr: 0.01 train_loss: 2.2171 train_roc: 0.9698 train_ap: 0.9676 time: 0.0831s
+INFO:root:Epoch: 0005 val_loss: 2.2331 val_roc: 0.7994 val_ap: 0.8260
+INFO:root:Epoch: 0010 lr: 0.01 train_loss: 2.0615 train_roc: 0.9751 train_ap: 0.9742 time: 0.0639s
+INFO:root:Epoch: 0010 val_loss: 2.0818 val_roc: 0.8334 val_ap: 0.8495
+INFO:root:Epoch: 0015 lr: 0.01 train_loss: 0.8991 train_roc: 0.9791 train_ap: 0.9804 time: 0.0857s
+INFO:root:Epoch: 0015 val_loss: 1.1341 val_roc: 0.8483 val_ap: 0.8580
+INFO:root:Epoch: 0020 lr: 0.01 train_loss: 0.4940 train_roc: 0.9811 train_ap: 0.9788 time: 0.0946s
+INFO:root:Epoch: 0020 val_loss: 1.0962 val_roc: 0.8610 val_ap: 0.8706
+INFO:root:Epoch: 0025 lr: 0.01 train_loss: 0.6350 train_roc: 0.9843 train_ap: 0.9791 time: 0.0606s
+INFO:root:Epoch: 0025 val_loss: 1.1150 val_roc: 0.8690 val_ap: 0.8798
+INFO:root:Epoch: 0030 lr: 0.01 train_loss: 0.4395 train_roc: 0.9838 train_ap: 0.9802 time: 0.0670s
+INFO:root:Epoch: 0030 val_loss: 1.0364 val_roc: 0.8802 val_ap: 0.8897
+INFO:root:Epoch: 0035 lr: 0.01 train_loss: 0.4210 train_roc: 0.9847 train_ap: 0.9830 time: 0.0617s
+INFO:root:Epoch: 0035 val_loss: 0.9258 val_roc: 0.8880 val_ap: 0.8952

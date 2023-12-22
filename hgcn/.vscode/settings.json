@@ -1,0 +1,11 @@
+{
+    "C_Cpp.codeAnalysis.clangTidy.headerFilter": "",
+    "settings": {
+        "editor.workspaceFolders": [
+            {
+                "name": "Root",
+                "uri": "."
+            }
+        ]
+    }
+}
